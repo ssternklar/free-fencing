@@ -46,7 +46,7 @@ enum Pins
 	IPIN_RIGHT_TARGET,
 	IPIN_RIGHT_OFF_TARGET,
 	IPIN_FLOOR,
-	IPIN_WEAPON_BUTTON
+	IPIN_WEAPON_BUTTON,
 	OPIN_LEFT_FAULT,
 	OPIN_RIGHT_FAULT,
 	OPIN_LEFT_TARGET,
@@ -80,10 +80,9 @@ void SetDigitalPinStates(Pins outputPinStates);
  */
 void SetPinState(Pins outputPin, int state);
 /**
- * Instructs the device to wait two microseconds
- * to allow electricity to propagate down the wire
+ * Instructs the device to wait for the specified time in microseconds
  */
-void waitTwoMicroSeconds();
+void Wait(FencingClock timeToWait);
 /**
  * Gets the current fencing time in microseconds.
  */

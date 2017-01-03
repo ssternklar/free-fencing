@@ -47,7 +47,18 @@ typedef struct {
 	FencingClock foilLockoutTime = MILLISECONDS(300);
 	FencingClock foilDebounceTime = MILLISECONDS(14);
 	FencingClock buzzerTime = MILLISECONDS(500);
+	FencingClock lightTime = MILLISECONDS(500);
 } FencingSettings;
+
+/**
+ * Updates fault light pins each loop
+ */
+void SetFaultLights();
+
+/**
+ * Updates the light pins based on game state
+ */
+void SetLights();
 
 /**
  * Handles everything that occurs immediately after lockout,

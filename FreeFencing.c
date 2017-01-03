@@ -11,9 +11,11 @@ FencingSettings settings;
 FencingTimeTracker left;
 FencingTimeTracker right;
 FencingTimeTracker buzzer;
-bool leftHit;
-bool rightHit;
-bool hasLockedOut;
+bool leftOffTarget = false;
+bool rightOffTarget = false;
+bool leftHit = false;
+bool rightHit = false;
+bool hasLockedOut = false;
 Mode mode = MODE_EPEE;
 int currentInput = 0;
 int previousInput = 0;
@@ -39,6 +41,7 @@ int main(int argc, char* argv[])
 			SwitchMode((++mode) % 3);
 		}
 		
+		SetFaultLights();
 		//run the current mode
 		switch(mode)
 		{
@@ -62,9 +65,42 @@ void SetMode(Mode newMode)
 	SetPinState(OPIN_WEAPON_EPEE + newMode, 1);
 }
 
+void SetFaultLights()
+{
+	SetPinState(OPIN_LEFT_FAULT, (input & IPIN_LEFT_FAULT) > 0);
+	SetPinState(OPIN_RIGHT_FAULT, (input & IPIN_RIGHT_FAULT) > 0);
+}
+
+void SetLights()
+{
+	SetPinState(OPIN_LEFT_TARGET, leftHit);
+	SetPinState(OPIN_RIGHT_TARGET, rightHit);
+	SetPinState(OPIN_LEFT_OFF_TARGET, leftOffTarget);
+	SetPinState(OPIN_RIGHT_OFF_TARGET, rightOffTarget);
+}
+
 void HandleLockout()
 {
-	//TODO: Implement lockout
+	//Set the lights again, just in case
+	SetLights();
+	
+	//Set the buzzer and wait
+	SetPinState(OPIN_BUZZER, 1);
+	Wait(setting.buzzerTime);
+	SetPinState(OPIN_BUZZER, 0);
+	Wait(setting.lightTime - setting.buzzerTime);
+	
+	//Reset state
+	leftHit = false;
+	rightHit = false;
+	leftOffTarget = false;
+	rightOffTarget = false;
+	hasLockedOut = false;
+	
+	//Reset lights
+	SetLights();
+	
+	currentInput = 0;
 }
 
 bool EpeeCheckWeapon(int input, bool leftFencer)
@@ -99,46 +135,47 @@ void EpeeMode()
 	
 	if(leftHit && currentTime - left.timeStarted > settings.epeeLockoutTime ||
 		rightHit && currentTIme - right.timeStarted > settings.epeeLockoutTime)
-		hasLockedOut = true;
-
-	if(!hasLockedOut)
 	{
-		if(EpeeCheckWeapon(currentInput, true))
+		HandleLockout();
+	}
+
+	if(EpeeCheckWeapon(currentInput, true))
+	{
+		if(left.active)
 		{
-			if(left.active)
+			if(currentTime - left.timeStarted > settings.epeeDebounceTime)
 			{
-				if(currentTime - left.timeStarted > settings.epeeDebounceTime)
-				{
-					leftHit = true;
-				}
-			}
-			else
-			{
-				left = { currentTime, true };
-			}
-		}
-		else
-		{
-			left.active = false;
-		}
-		
-		if(EpeeCheckWeapon(currentInput, false))
-		{
-			if(right.active)
-			{
-				if(currentTime - right.timeStarted > settings.epeeDebounceTime)
-				{
-					rightHit = true;
-				}
-			}
-			else
-			{
-				right = { currentTime, true };
+				leftHit = true;
+				SetLights();
 			}
 		}
 		else
 		{
-			right.active = false;
+			left = { currentTime, true };
 		}
+	}
+	else
+	{
+		left.active = false;
+	}
+	
+	if(EpeeCheckWeapon(currentInput, false))
+	{
+		if(right.active)
+		{
+			if(currentTime - right.timeStarted > settings.epeeDebounceTime)
+			{
+				rightHit = true;
+				SetLights();
+			}
+		}
+		else
+		{
+			right = { currentTime, true };
+		}
+	}
+	else
+	{
+		right.active = false;
 	}
 }
