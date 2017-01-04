@@ -18,12 +18,12 @@
 /**
  *Enum defining which weapon mode we're on
  */
-enum Mode
+typedef enum Mode
 {
 	MODE_EPEE,
 	MODE_FOIL,
 	MODE_SABER
-};
+}Mode;
 
 /**
  * wrapper for a time tracker of sorts that gets used for the weapons

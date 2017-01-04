@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 	{
 		currentInput = GetDigitalPinStates();
 		//switch modes if necessary
-		if(previousInput & IPIN_WEAPON_SWITCH && !(currentInput & IPIN_WEAPON_SWITCH))
+		if((previousInput & IPIN_WEAPON_BUTTON) && !(currentInput & IPIN_WEAPON_BUTTON))
 		{
 			SwitchMode((++mode) % 3);
 		}
@@ -60,15 +60,19 @@ void SetMode(Mode newMode)
 	//Reset everything that we can output
 	SetDigitalPinStates(0);
 	mode = newMode;
-	FencingTracking newTracking;
-	tracking = newTracking;
+	left.active = false;
+	right.active = false;
+	buzzer.active = false;
+	hasLockedOut = false;
+	leftHit = false;
+	rightHit = false;
 	SetPinState(OPIN_WEAPON_EPEE + newMode, 1);
 }
 
 void SetFaultLights()
 {
-	SetPinState(OPIN_LEFT_FAULT, (input & IPIN_LEFT_FAULT) > 0);
-	SetPinState(OPIN_RIGHT_FAULT, (input & IPIN_RIGHT_FAULT) > 0);
+	SetPinState(OPIN_LEFT_FAULT, (currentInput & IPIN_LEFT_FAULT) > 0);
+	SetPinState(OPIN_RIGHT_FAULT, (currentInput & IPIN_RIGHT_FAULT) > 0);
 }
 
 void SetLights()
@@ -85,10 +89,11 @@ void HandleLockout()
 	SetLights();
 	
 	//Set the buzzer and wait
+	// TODO: check whether the buzzing and lights should start at when a hit is received
 	SetPinState(OPIN_BUZZER, 1);
-	Wait(setting.buzzerTime);
+	Wait(settings.buzzerTime);
 	SetPinState(OPIN_BUZZER, 0);
-	Wait(setting.lightTime - setting.buzzerTime);
+	Wait(settings.lightTime - settings.buzzerTime);
 	
 	//Reset state
 	leftHit = false;
@@ -111,13 +116,13 @@ bool EpeeCheckWeapon(int input, bool leftFencer)
 	Pins floor = IPIN_FLOOR;
 	if(leftFencer)
 	{
-		fencerA = 1 << IPIN_LEFT_A
+		fencerA = 1 << IPIN_LEFT_A;
 		fencerB = 1 << IPIN_LEFT_B;
 		opponentC = 1 << IPIN_RIGHT_C;
 	}
 	else
 	{
-		fencerA = 1 << IPIN_RIGHT_A
+		fencerA = 1 << IPIN_RIGHT_A;
 		fencerB = 1 << IPIN_RIGHT_B;
 		opponentC = 1 << IPIN_LEFT_C;
 	}
@@ -133,8 +138,8 @@ void EpeeMode()
 {
 	FencingClock currentTime = PlatformClock();
 	
-	if(leftHit && currentTime - left.timeStarted > settings.epeeLockoutTime ||
-		rightHit && currentTIme - right.timeStarted > settings.epeeLockoutTime)
+	if((leftHit && (currentTime - left.timeStarted > settings.epeeLockoutTime)) ||
+		(rightHit && (currentTime - right.timeStarted > settings.epeeLockoutTime)))
 	{
 		HandleLockout();
 	}
@@ -151,7 +156,7 @@ void EpeeMode()
 		}
 		else
 		{
-			left = { currentTime, true };
+			left = (FencingTimeTracker){ currentTime, true };
 		}
 	}
 	else
@@ -171,11 +176,12 @@ void EpeeMode()
 		}
 		else
 		{
-			right = { currentTime, true };
+			right = (FencingTimeTracker){ currentTime, true };
 		}
 	}
 	else
 	{
 		right.active = false;
 	}
+	// TODO: swap the pulled pins.
 }

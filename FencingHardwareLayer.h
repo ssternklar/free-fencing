@@ -22,7 +22,9 @@
 #ifdef ARDUINO
 typedef unsigned long FencingClock;
 #elif RASPBERRY_PI
-typedef int FencingClock;
+typedef unsigned int FencingClock;
+#else
+typedef unsigned int FencingClock;
 #endif
 
 #ifndef __cplusplus
@@ -31,7 +33,7 @@ typedef char bool;
 #define true 1
 #endif
 
-enum Pins
+typedef enum Pins
 {
 	IPIN_LEFT_A,
 	IPIN_LEFT_B,
@@ -57,32 +59,38 @@ enum Pins
 	OPIN_WEAPON_EPEE,
 	OPIN_WEAPON_FOIL,
 	OPIN_WEAPON_SABER,
-};
+} Pins;
 
 /**
  * Initializes all GPIO pins defined above
  */
 void InitializeIO();
+
 /**
  * Gets all pin states
  */
 int GetDigitalPinStates();
+
 /**
  * Gets one pin state
  */
 int GetDigitalPinState(Pins pin);
+
 /**
  * Sets all pin states defined as OPIN
  */
 void SetDigitalPinStates(Pins outputPinStates);
+
 /**
  * Sets one OPIN state.
  */
 void SetPinState(Pins outputPin, int state);
+
 /**
  * Instructs the device to wait for the specified time in microseconds
  */
 void Wait(FencingClock timeToWait);
+
 /**
  * Gets the current fencing time in microseconds.
  */
