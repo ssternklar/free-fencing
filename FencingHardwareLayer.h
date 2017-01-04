@@ -9,15 +9,12 @@
 //Platform code should be written in an ifdef and the name of your platform in allcaps
 //For example a Raspberry Pi will be RASPBERRY_PI, and an arduino will be ARDUINO
 
-#ifndef FENCING_IO_H
-#define FENCING_IO_H
+#ifndef FENCING_HARDWARE_LAYER_H
+#define FENCING_HARDWARE_LAYER_H
 
 #define MICROSECONDS(X) X
 #define MILLISECONDS(X) X * 1000
 #define SECONDS(X) X * 1000 * 1000
-
-#define true 1
-#define false 0
 
 #ifdef ARDUINO
 typedef unsigned long FencingClock;
