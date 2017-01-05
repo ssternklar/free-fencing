@@ -130,7 +130,7 @@ bool EpeeCheckWeapon(int input, bool leftFencer)
 	Pins floor = IPIN_FLOOR;
 	if(leftFencer)
 	{
-		fencerA = PIN_LEFT_A;
+		fencerA = OPIN_LEFT_A;
 		fencerB = IPIN_LEFT_B;
 		opponentC = IPIN_RIGHT_C;
 	}
