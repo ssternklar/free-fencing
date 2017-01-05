@@ -17,8 +17,8 @@ bool leftHit = false;
 bool rightHit = false;
 bool hasLockedOut = false;
 Mode mode = MODE_EPEE;
-int currentInput = 0;
-int previousInput = 0;
+bool currentlyPressingWeaponButton = false;
+bool previouslyPressingWeaponButton = false;
 
 int main(int argc, char* argv[])
 {
@@ -38,11 +38,11 @@ int main(int argc, char* argv[])
 	
 	while(1)
 	{
-		currentInput = GetDigitalPinStates();
+		currentlyPressingWeaponButton = GetDigitalPinState(IPIN_WEAPON_BUTTON);
 		//switch modes if necessary
-		if((previousInput & IPIN_WEAPON_BUTTON) && !(currentInput & IPIN_WEAPON_BUTTON))
+		if(previouslyPressingWeaponButton && !currentlyPressingWeaponButton)
 		{
-			SwitchMode((++mode) % 3);
+			SetMode((++mode) % 3);
 		}
 		
 		SetFaultLights();
@@ -55,14 +55,23 @@ int main(int argc, char* argv[])
 			default:
 				break;
 		}
-		previousInput = currentInput;
+		previouslyPressingWeaponButton = currentlyPressingWeaponButton;
 	}
 }
 
 void SetMode(Mode newMode)
 {
 	//Reset everything that we can output
-	SetDigitalPinStates(0);
+	SetPinState(OPIN_LEFT_A, 0);
+	SetPinState(OPIN_RIGHT_A, 0);
+	SetPinState(OPIN_LEFT_FAULT, 0);
+	SetPinState(OPIN_RIGHT_FAULT, 0);
+	SetPinState(OPIN_LEFT_TARGET, 0);
+	SetPinState(OPIN_RIGHT_TARGET, 0);
+	SetPinState(OPIN_LEFT_OFF_TARGET, 0);
+	SetPinState(OPIN_RIGHT_OFF_TARGET, 0);
+	SetPinState(OPIN_BUZZER, 0);
+
 	mode = newMode;
 	left.active = false;
 	right.active = false;
@@ -75,8 +84,8 @@ void SetMode(Mode newMode)
 
 void SetFaultLights()
 {
-	SetPinState(OPIN_LEFT_FAULT, (currentInput & IPIN_LEFT_FAULT) > 0);
-	SetPinState(OPIN_RIGHT_FAULT, (currentInput & IPIN_RIGHT_FAULT) > 0);
+	SetPinState(OPIN_LEFT_FAULT, GetDigitalPinState(IPIN_LEFT_FAULT));
+	SetPinState(OPIN_RIGHT_FAULT, GetDigitalPinState(IPIN_RIGHT_FAULT));
 }
 
 void SetLights()
@@ -108,8 +117,6 @@ void HandleLockout()
 	
 	//Reset lights
 	SetLights();
-	
-	currentInput = 0;
 }
 
 void WaitShortTime(FencingClock waitTime)
@@ -122,7 +129,7 @@ void WaitShortTime(FencingClock waitTime)
 	
 }
 
-bool EpeeCheckWeapon(int input, bool leftFencer)
+bool EpeeCheckWeapon(bool leftFencer)
 {
 	Pins fencerA;
 	Pins fencerB;
@@ -143,11 +150,12 @@ bool EpeeCheckWeapon(int input, bool leftFencer)
 	
 	SetPinState(fencerA, 1); //should be redefined to whatever "high" is. Right now 1 is just meant to represent "on" assuming a digital pin.
 	WaitShortTime(settings.wirePropagationTime);
-	bool status = (
-		(input & 1 << floor) == 0 && //The floor is not being hit
-		(input & 1 << fencerB) > 0 && // this fencer's B is active
-		(~input & 1 << opponentC) == 0 // this fencer's C is NOT active
-	);
+
+	bool floorState = GetDigitalPinState(floor);
+	bool fencerBState = GetDigitalPinState(fencerB);
+	bool opponentCState = GetDigitalPinState(opponentC);
+
+	bool status = (floorState && fencerBState && opponentCState);
 	
 	SetPinState(fencerA, 0); //should be redefined to whatever "low" is. See above.
 	
@@ -165,7 +173,7 @@ void EpeeMode()
 		HandleLockout();
 	}
 
-	if(EpeeCheckWeapon(currentInput, true))
+	if(EpeeCheckWeapon(true))
 	{
 		if(left.active)
 		{
@@ -185,7 +193,7 @@ void EpeeMode()
 		left.active = false;
 	}
 	
-	if(EpeeCheckWeapon(currentInput, false))
+	if(EpeeCheckWeapon(false))
 	{
 		if(right.active)
 		{

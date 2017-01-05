@@ -16,9 +16,9 @@
 #define MILLISECONDS(X) X * 1000
 #define SECONDS(X) X * 1000 * 1000
 
-#ifdef ARDUINO
+#if defined ARDUINO
 typedef unsigned long FencingClock;
-#elif RASPBERRY_PI
+#elif defined RASPBERRY_PI
 typedef unsigned int FencingClock;
 #else
 typedef unsigned int FencingClock;
@@ -64,19 +64,9 @@ typedef enum Pins
 void InitializeIO();
 
 /**
- * Gets all pin states
- */
-int GetDigitalPinStates();
-
-/**
  * Gets one pin state
  */
-int GetDigitalPinState(Pins pin);
-
-/**
- * Sets all pin states defined as OPIN
- */
-void SetDigitalPinStates(Pins outputPinStates);
+bool GetDigitalPinState(Pins pin);
 
 /**
  * Sets one OPIN state.
