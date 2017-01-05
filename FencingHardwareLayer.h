@@ -9,6 +9,11 @@
 //Platform code should be written in an ifdef and the name of your platform in allcaps
 //For example a Raspberry Pi will be RASPBERRY_PI, and an arduino will be ARDUINO
 
+//We have a WINDOWS version entirely for testing
+#ifdef _WIN32
+#define WINDOWS
+#endif
+
 #ifndef FENCING_HARDWARE_LAYER_H
 #define FENCING_HARDWARE_LAYER_H
 
@@ -20,6 +25,8 @@
 typedef unsigned long FencingClock;
 #elif defined RASPBERRY_PI
 typedef unsigned int FencingClock;
+#elif defined WINDOWS
+typedef unsigned long long FencingClock;
 #else
 typedef unsigned int FencingClock;
 #endif
