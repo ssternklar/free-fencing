@@ -108,6 +108,16 @@ void HandleLockout()
 	currentInput = 0;
 }
 
+void WaitShortTime(FencingClock waitTime)
+{
+	FencingClock start = PlatformClock();
+	while(PlatformClock() - start < waitTime)
+	{
+		//do nothing
+	}
+	
+}
+
 bool EpeeCheckWeapon(int input, bool leftFencer)
 {
 	Pins fencerA;
@@ -116,22 +126,29 @@ bool EpeeCheckWeapon(int input, bool leftFencer)
 	Pins floor = IPIN_FLOOR;
 	if(leftFencer)
 	{
-		fencerA = 1 << IPIN_LEFT_A;
-		fencerB = 1 << IPIN_LEFT_B;
-		opponentC = 1 << IPIN_RIGHT_C;
+		fencerA = PIN_LEFT_A;
+		fencerB = IPIN_LEFT_B;
+		opponentC = IPIN_RIGHT_C;
 	}
 	else
 	{
-		fencerA = 1 << IPIN_RIGHT_A;
-		fencerB = 1 << IPIN_RIGHT_B;
-		opponentC = 1 << IPIN_LEFT_C;
+		fencerA = OPIN_RIGHT_A;
+		fencerB = IPIN_RIGHT_B;
+		opponentC = IPIN_LEFT_C;
 	}
-	return (
-		(input & floor) == 0 && //The floor is not being hit
-		(input & fencerA) > 0 && // this fencer's A is active
-		(input & fencerB) > 0 && // this fencer's B is active
-		(~input & opponentC) == 0 // this fencer's C is NOT active
+	
+	SetPinState(fencerA, 1); //should be redefined to whatever "high" is. Right now 1 is just meant to represent "on" assuming a digital pin.
+	WaitShortTime(settings.wirePropagationTime);
+	bool status = (
+		(input & 1 << floor) == 0 && //The floor is not being hit
+		(input & 1 << fencerB) > 0 && // this fencer's B is active
+		(~input & 1 << opponentC) == 0 // this fencer's C is NOT active
 	);
+	
+	SetPinState(fencerA, 0); //should be redefined to whatever "low" is. See above.
+	
+	//Wait a little bit of time just in case
+	WaitShortTime(settings.wirePropagationTime);
 }
 
 void EpeeMode()
@@ -183,5 +200,4 @@ void EpeeMode()
 	{
 		right.active = false;
 	}
-	// TODO: swap the pulled pins.
 }

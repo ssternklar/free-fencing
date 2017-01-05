@@ -46,6 +46,7 @@ typedef struct {
 	FencingClock saberDebounceTime = MICROSECONDS(500);
 	FencingClock foilLockoutTime = MILLISECONDS(300);
 	FencingClock foilDebounceTime = MILLISECONDS(14);
+	FencingClock wirePropagationTime = MICROSECONDS(100);
 	FencingClock buzzerTime = MILLISECONDS(500);
 	FencingClock lightTime = MILLISECONDS(500);
 } FencingSettings;
@@ -59,6 +60,13 @@ void SetFaultLights();
  * Updates the light pins based on game state
  */
 void SetLights();
+
+/**
+ * Waits for a very short period of time
+ * This is very imprecise
+ * Should only be used for sub-millisecond wait timings
+ */
+void WaitShortTime(FencingClock waitTime);
 
 /**
  * Handles everything that occurs immediately after lockout,
