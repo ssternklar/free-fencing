@@ -29,6 +29,10 @@ int main(int argc, char* argv[])
 	{
 		//TODO: Read file and adjust settings accordingly
 	}
+	else
+	{
+		settings = defaultSettings;
+	}
 	
 	mode = MODE_EPEE;
 	

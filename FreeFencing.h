@@ -23,7 +23,7 @@ typedef enum Mode
 	MODE_EPEE,
 	MODE_FOIL,
 	MODE_SABER
-}Mode;
+} Mode;
 
 /**
  * wrapper for a time tracker of sorts that gets used for the weapons
@@ -40,16 +40,28 @@ typedef struct {
  * if we ever read data from a file or something like that
  */
 typedef struct {
-	FencingClock epeeLockoutTime = MILLISECONDS(40);
-	FencingClock epeeDebounceTime = MILLISECONDS(2);
-	FencingClock saberLockoutTime = MILLISECONDS(170);
-	FencingClock saberDebounceTime = MICROSECONDS(500);
-	FencingClock foilLockoutTime = MILLISECONDS(300);
-	FencingClock foilDebounceTime = MILLISECONDS(14);
-	FencingClock wirePropagationTime = MICROSECONDS(100);
-	FencingClock buzzerTime = MILLISECONDS(500);
-	FencingClock lightTime = MILLISECONDS(500);
+	FencingClock epeeLockoutTime;
+	FencingClock epeeDebounceTime;
+	FencingClock saberLockoutTime;
+	FencingClock saberDebounceTime;
+	FencingClock foilLockoutTime;
+	FencingClock foilDebounceTime;
+	FencingClock wirePropagationTime;
+	FencingClock buzzerTime;
+	FencingClock lightTime;
 } FencingSettings;
+
+FencingSettings defaultSettings = {
+	.epeeLockoutTime = MILLISECONDS(40),
+	.epeeDebounceTime = MILLISECONDS(2),
+	.saberLockoutTime = MILLISECONDS(170),
+	.saberDebounceTime = MICROSECONDS(500),
+	.foilLockoutTime = MILLISECONDS(300),
+	.foilDebounceTime = MILLISECONDS(14),
+	.wirePropagationTime = MICROSECONDS(100),
+	.buzzerTime = MILLISECONDS(500),
+	.lightTime = MILLISECONDS(500),
+};
 
 /**
  * Updates fault light pins each loop
