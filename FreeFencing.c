@@ -155,12 +155,14 @@ bool EpeeCheckWeapon(bool leftFencer)
 	bool fencerBState = GetDigitalPinState(fencerB);
 	bool opponentCState = GetDigitalPinState(opponentC);
 
-	bool status = (floorState && fencerBState && opponentCState);
+	bool status = (floorState && fencerBState && !opponentCState);
 	
 	SetPinState(fencerA, 0); //should be redefined to whatever "low" is. See above.
 	
 	//Wait a little bit of time just in case
 	WaitShortTime(settings.wirePropagationTime);
+	
+	return status;
 }
 
 void EpeeMode()
