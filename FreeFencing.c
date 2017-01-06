@@ -155,7 +155,7 @@ bool EpeeCheckWeapon(bool leftFencer)
 	bool fencerBState = GetDigitalPinState(fencerB);
 	bool opponentCState = GetDigitalPinState(opponentC);
 
-	bool status = (floorState && fencerBState && !opponentCState);
+	bool status = (!floorState && fencerBState && !opponentCState);
 	
 	SetPinState(fencerA, 0); //should be redefined to whatever "low" is. See above.
 	
@@ -179,7 +179,7 @@ void EpeeMode()
 	{
 		if(left.active)
 		{
-			if(currentTime - left.timeStarted > settings.epeeDebounceTime)
+			if(!leftHit && currentTime - left.timeStarted > settings.epeeDebounceTime)
 			{
 				leftHit = true;
 				SetLights();
@@ -199,7 +199,7 @@ void EpeeMode()
 	{
 		if(right.active)
 		{
-			if(currentTime - right.timeStarted > settings.epeeDebounceTime)
+			if(!rightHit && currentTime - right.timeStarted > settings.epeeDebounceTime)
 			{
 				rightHit = true;
 				SetLights();

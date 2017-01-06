@@ -16,19 +16,33 @@
 #include <Windows.h>
 #include <stdio.h>
 
+unsigned int input;
+
 void InitializeIO()
 {
-
+	input = 0;
 }
 
 bool GetDigitalPinState(Pins pin)
 {
-
+	return (input & (1 << pin)) > 0;
 }
 
 void SetPinState(Pins outputPin, int state)
 {
-
+	input ^= (-state ^ input) & (1 << outputPin);
+	if (outputPin == OPIN_LEFT_A)
+	{
+		input ^= (-state ^ input) & (1 << IPIN_LEFT_B);
+	}
+	else if (outputPin == OPIN_LEFT_TARGET && state == 1)
+	{
+		puts("Left fencer hit");
+	}
+	else if (outputPin == OPIN_RIGHT_TARGET && state == 1)
+	{
+		puts("Right fencer hit");
+	}
 }
 
 void Wait(FencingClock timeToWait)
